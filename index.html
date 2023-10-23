@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscador de fragmentos de video</title>
+</head>
+<body>
+    <h1>Buscador de fragmentos de video</h1>
+
+    <form action="/search" method="post">
+        <input type="text" name="query" placeholder="Ingrese la palabra clave">
+        <input type="submit" value="Buscar">
+    </form>
+
+    <div id="results"></div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("form").submit(function(e) {
+                e.preventDefault();
+
+                var query = $("input[name='query']").val();
+
+                $.ajax({
+                    url: "/search",
+                    method: "post",
+                    data: {
+                        query: query
+                    },
+                    success: function(response) {
+                        console.log(response);
+
+                        var videos = response.videos;
+
+                        var fragments = [];
+
+                        for (var i = 0; i < videos.length; i++) {
+                            var video = videos[i];
+
+                            var start_time = video.start_time;
+                            var end_time = video.end_time;
+
+                            var fragment = {
+                                filename: video.filename,
+                                start_time: start_time,
+                                end_time: end_time
+                            };
+
+                            fragments.push(fragment);
+                        }
+
+                        var output_file = "output.mp4";
+
+                        var ffmpeg = require("ffmpeg");
+
+                        ffmpeg.input(*[f.filename for f in fragments]).output(output_file, {
+                            duration: 180
+                        })
+
+                        console.log("El video se ha creado correctamente");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
